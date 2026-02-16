@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#059669">
+    <title>Мой План Хифза 2.0</title>
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --primary: #059669; /* Изумруд */
+            --primary-light: #34d399;
+            --bg: #ecfdf5;
+            --card: #ffffff;
+            --text: #1f2937;
+            --text-sub: #6b7280;
+            --border: #e5e7eb;
+            --shadow: rgba(0, 0, 0, 0.05);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #111827;
+                --card: #1f2937;
+                --text: #f3f4f6;
+                --text-sub: #9ca3af;
+                --border: #374151;
+                --shadow: rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            transition: background 0.3s;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        /* АНИМАЦИИ */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* SETUP SCREEN */
+        #setupScreen {
+            display: flex; /* Flex by default, JS will toggle */
+            flex-direction: column;
+            justify-content: center;
+            height: 90vh;
+            animation: fade 0.5s ease;
+        }
+
+        .setup-card {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px var(--shadow);
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-sub);
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button.btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+        }
+
+        button.btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        /* MAIN APP */
+        #appScreen {
+            display: none;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .quote-box {
+            background: linear-gradient(135deg, #065f46, #047857);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(6, 95, 70, 0.3);
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
+        }
+        
+        .quote-box::before {
+            content: '"';
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            font-size: 60px;
+            opacity: 0.2;
+            font-family: serif;
+        }
+
+        .progress-wrapper {
+            background: var(--border);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* DAY CARD */
+        .day-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px var(--shadow);
+            border: 1px solid var(--border);
+            animation: slideUp 0.4s ease backwards;
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .day-title {
+            font-weight: 800;
+            font-size: 18px;
+            color: var(--primary);
+        }
+
+        .task-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 5px;
+        }
+
+        .task-item:active {
+            background: var(--bg);
+        }
+
+        .checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--text-sub);
+            border-radius: 6px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .task-item.checked .checkbox {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            animation: pop 0.3s;
+        }
+
+        .task-content {
+            flex-grow: 1;
+        }
+
+        .task-type {
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-sub);
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .task-val {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .task-item.checked .task-val {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+
+        .reset-link {
+            display: block;
+            text-align: center;
+            color: var(--text-sub);
+            font-size: 12px;
+            margin-top: 40px;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        /* CONFETTI CANVAS */
+        #confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+    </style>
+</head>
+<body>
+
+<canvas id="confetti"></canvas>
+
+<!-- --- ЭКРАН НАСТРОЙКИ (Показывается если нет данных) --- -->
+<div class="container" id="setupScreen">
+    <div class="setup-card">
+        <h2 style="color: var(--primary); margin-top:0;">Настройка программы</h2>
+        <p style="color: var(--text-sub); font-size: 14px; margin-bottom: 20px;">
+            «Лучший из вас тот, кто изучает Коран и обучает ему других».
+        </p>
+
+        <div class="input-group">
+            <label>С какой страницы начинаем?</label>
+            <input type="number" id="startPageInput" value="19" min="1" max="604">
+        </div>
+
+        <div class="input-group">
+            <label>Твой темп:</label>
+            <select id="paceInput">
+                <option value="0.5">Половина страницы (5-7 строк)</option>
+                <option value="1">Целая страница (13-15 строк)</option>
+            </select>
+        </div>
+
+        <button class="btn-primary" onclick="generateAndStart()">Создать план</button>
+    </div>
+</div>
+
+<!-- --- ОСНОВНОЙ ЭКРАН --- -->
+<div class="container" id="appScreen">
+    <header>
+        <span style="font-family:'Traditional Arabic'; font-size: 24px; color: var(--primary);">بِسْمِ اللّهِ الرَّحْمَنِ الرَّحِيمِ</span>
+        
+        <div class="quote-box" id="quoteBox">
+            Загрузка мудрости...
+        </div>
+
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-sub);">
+            <span>Прогресс месяца</span>
+            <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-wrapper">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+    </header>
+
+    <div id="scheduleList">
+        <!-- JS генерирует список здесь -->
+    </div>
+
+    <div class="reset-link" onclick="fullReset()">Сбросить настройки и начать заново</div>
+</div>
+
+<!-- --- ЗВУКИ (Base64) --- -->
+<audio id="soundClick" src="data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="></audio> 
+<!-- Note: Реальные звуки будут добавлены JS-ом ниже для экономии места -->
+
+<script>
+    // --- ДАННЫЕ И НАСТРОЙКИ ---
+    
+    // Мотивационные фразы
+    const quotes = [
+        "Тот, кто читает Коран, являясь искусным в этом, будет с благородными и покорными писцами (ангелами). (Аль-Бухари)",
+        "Читай Коран, ибо, поистине, в День воскресения он явится заступником за своих чтецов. (Муслим)",
+        "Поистине, Аллах возвышает одни народы посредством этой Книги и унижает другие. (Муслим)",
+        "Сердце, в котором нет ничего из Корана, подобно разрушенному дому. (Ат-Тирмизи)",
+        "Зависть допустима лишь в двух случаях: человеку, которому Аллах даровал Коран, и он читает его днем и ночью... (Аль-Бухари)",
+        "Лучший из вас тот, кто изучает Коран и обучает ему других. (Аль-Бухари)",
+        "Коран – это богатство, с которым нет бедности, и без которого нет богатства.",
+        "Не торопись при чтении, а читай размеренно. (Коран 73:4)"
+    ];
+
+    // Звуки (короткие beep)
+    // Чтобы код не был огромным, я использую очень короткие синтезированные звуки или placeholder.
+    // Для полноценного звука лучше использовать внешние файлы, но для single-file используем JS Audio Context или короткие URI.
+    const clickSound = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU"+Array(100).join("A")); // Placeholder silence
+    
+    // Реальная генерация звука "клик" через Web Audio API (лучше чем base64)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playClick() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+    }
+
+    function playSuccess() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(1000, audioCtx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.4);
+    }
+
+    // --- ЛОГИКА ---
+    const DB_KEY = 'quran_app_v2';
+    let appData = {
+        setup: false,
+        startPage: 1,
+        pace: 0.5,
+        schedule: [],
+        progress: {}
+    };
+
+    function init() {
+        const saved = localStorage.getItem(DB_KEY);
+        if (saved) {
+            appData = JSON.parse(saved);
+        }
+
+        if (!appData.setup) {
+            document.getElementById('setupScreen').style.display = 'flex';
+            document.getElementById('appScreen').style.display = 'none';
+        } else {
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('appScreen').style.display = 'block';
+            loadDashboard();
+        }
+    }
+
+    function generateAndStart() {
+        const startPage = parseInt(document.getElementById('startPageInput').value);
+        const pace = parseFloat(document.getElementById('paceInput').value);
+
+        appData.startPage = startPage;
+        appData.pace = pace;
+        appData.setup = true;
+        appData.schedule = createSchedule(startPage, pace);
+        
+        saveData();
+        init();
+    }
+
+    // Алгоритм генерации плана на 30 дней
+    function createSchedule(start, pace) {
+        let plan = [];
+        let currentPage = start;
+        let isTop = true; // true = верх страницы, false = низ
+
+        for (let day = 1; day <= 30; day++) {
+            // МАНЗИЛЬ (АРХИВ)
+            // Логика: если выучено мало, читаем с начала. Если много - делим.
+            let manzilText = "";
+            let manzilStart = 1; // Условно считаем с 1-й стр или с начала джуза
+            let manzilEnd = Math.floor(currentPage) - 6; 
+            
+            if (manzilEnd < 1) manzilText = "Пока нет (накопление)";
+            else {
+                // Если архива много (>20 стр), делим на чет/нечет дни
+                if (manzilEnd > 20) {
+                    let mid = Math.floor(manzilEnd / 2);
+                    if (day % 2 !== 0) manzilText = `Стр 1 – ${mid}`;
+                    else manzilText = `Стр ${mid + 1} – ${manzilEnd}`;
+                } else {
+                    manzilText = `Стр 1 – ${manzilEnd}`;
+                }
+            }
+
+            // САБКИ (СВЯЗКА) - Последние 5 полных страниц
+            let sabkiStart = Math.max(1, Math.floor(currentPage) - 5);
+            let sabkiEnd = Math.max(1, Math.floor(currentPage));
+            // Если мы в середине страницы, захватываем и верх
+            let sabkiText = `Стр ${sabkiStart} – ${sabkiEnd}`;
+            if (!isTop && pace === 0.5) sabkiText += " + Верх текущей";
+
+            // САБАК (НОВОЕ)
+            let sabakText = "";
+            if (day % 7 === 0) {
+                sabakText = "ВЫХОДНОЙ (Повторение)";
+                manzilText = "Весь архив";
+                sabkiText = "Вся связка";
+            } else {
+                if (pace === 1) {
+                    sabakText = `Стр ${currentPage} (Полная)`;
+                    currentPage++;
+                } else {
+                    sabakText = `Стр ${Math.floor(currentPage)} (${isTop ? 'Верх' : 'Низ'})`;
+                    if (!isTop) currentPage++; // Если закончили низ, след. стр
+                    isTop = !isTop;
+                }
+            }
+
+            plan.push({
+                day: day,
+                manzil: manzilText,
+                sabki: sabkiText,
+                sabak: sabakText,
+                isRest: (day % 7 === 0)
+            });
+        }
+        return plan;
+    }
+
+    function loadDashboard() {
+        // Цитата
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        document.getElementById('quoteBox').innerText = randomQuote;
+
+        const list = document.getElementById('scheduleList');
+        list.innerHTML = '';
+
+        let completedTasks = 0;
+        let totalTasks = 0;
+        let firstActiveDay = null;
+
+        appData.schedule.forEach((day, index) => {
+            const dayId = index + 1;
+            
+            // Ключи задач
+            const kM = `d${dayId}_m`;
+            const kS = `d${dayId}_s`;
+            const kN = `d${dayId}_n`;
+
+            const doneM = appData.progress[kM];
+            const doneS = appData.progress[kS];
+            const doneN = appData.progress[kN];
+
+            // Если день выходной, задач может быть меньше или одна общая
+            // Для упрощения считаем 3 галочки всегда, просто текст "отдых"
+            
+            totalTasks += 3;
+            if(doneM) completedTasks++;
+            if(doneS) completedTasks++;
+            if(doneN) completedTasks++;
+
+            const isDayDone = doneM && doneS && doneN;
+
+            // Анимация задержки (stagger)
+            const delay = index < 5 ? index * 100 : 0; 
+
+            // Скролл к первому незавершенному
+            if (!firstActiveDay && !isDayDone) firstActiveDay = `dayCard_${dayId}`;
+
+            const card = document.createElement('div');
+            card.className = 'day-card';
+            card.id = `dayCard_${dayId}`;
+            card.style.animationDelay = `${delay}ms`;
+            if (isDayDone) {
+                card.style.opacity = '0.6';
+                card.style.borderColor = 'var(--primary)';
+            }
+
+            card.innerHTML = `
+                <div class="day-header">
+                    <span class="day-title">День ${day.day}</span>
+                    <span>${isDayDone ? '✅' : ''}</span>
+                </div>
+                <ul class="task-list">
+                    <li class="task-item ${doneM ? 'checked' : ''}" onclick="toggleTask('${kM}', ${dayId})">
+                        <div class="checkbox">${doneM ? '✓' : ''}</div>
+                        <div class="task-content">
+                            <span class="task-type" style="color:#b91c1c;">Архив (Манзиль)</span>
+                            <span class="task-val">${day.manzil}</span>
+                        </div>
+                    </li>
+                    <li class="task-item ${doneS ? 'checked' : ''}" onclick="toggleTask('${kS}', ${dayId})">
+                        <div class="checkbox">${doneS ? '✓' : ''}</div>
+                        <div class="task-content">
+                            <span class="task-type" style="color:#b45309;">Связка (Сабки)</span>
+                            <span class="task-val">${day.sabki}</span>
+                        </div>
+                    </li>
+                    <li class="task-item ${doneN ? 'checked' : ''}" onclick="toggleTask('${kN}', ${dayId})">
+                        <div class="checkbox">${doneN ? '✓' : ''}</div>
+                        <div class="task-content">
+                            <span class="task-type" style="color:#047857;">Новое (Сабак)</span>
+                            <span class="task-val">${day.sabak}</span>
+                        </div>
+                    </li>
+                </ul>
+            `;
+            list.appendChild(card);
+        });
+
+        // Обновление прогресса
+        const percent = Math.round((completedTasks / totalTasks) * 100);
+        document.getElementById('progressBar').style.width = `${percent}%`;
+        document.getElementById('progressPercent').innerText = `${percent}%`;
+
+        // Автоскролл
+        if (firstActiveDay) {
+            setTimeout(() => {
+                const el = document.getElementById(firstActiveDay);
+                if(el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 500);
+        }
+    }
+
+    function toggleTask(key, dayId) {
+        if (appData.progress[key]) {
+            delete appData.progress[key];
+        } else {
+            appData.progress[key] = true;
+            playClick();
+        }
+        saveData();
+        loadDashboard(); // Перерисовка (можно оптимизировать, но для 30 дней не критично)
+        checkDayCompletion(dayId);
+    }
+
+    function checkDayCompletion(dayId) {
+        const kM = `d${dayId}_m`;
+        const kS = `d${dayId}_s`;
+        const kN = `d${dayId}_n`;
+        
+        if (appData.progress[kM] && appData.progress[kS] && appData.progress[kN]) {
+            playSuccess();
+            fireConfetti();
+        }
+    }
+
+    function saveData() {
+        localStorage.setItem(DB_KEY, JSON.stringify(appData));
+    }
+
+    function fullReset() {
+        if(confirm("Стереть все данные и начать с нуля?")) {
+            localStorage.removeItem(DB_KEY);
+            location.reload();
+        }
+    }
+
+    // --- CONFETTI EFFECT (Simple JS Implementation) ---
+    function fireConfetti() {
+        const canvas = document.getElementById('confetti');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particles = [];
+        const colors = ['#059669', '#34d399', '#fbbf24', '#f59e0b'];
+
+        for(let i=0; i<100; i++) {
+            particles.push({
+                x: canvas.width / 2,
+                y: canvas.height / 2,
+                vx: (Math.random() - 0.5) * 10,
+                vy: (Math.random() - 0.5) * 10 - 5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                size: Math.random() * 5 + 2,
+                life: 100
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+            let active = false;
+            particles.forEach(p => {
+                if(p.life > 0) {
+                    active = true;
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.2; // gravity
+                    p.life--;
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(p.x, p.y, p.size, p.size);
+                }
+            });
+            if(active) requestAnimationFrame(draw);
+        }
+        draw();
+    }
+
+    // Start
+    init();
+
+</script>
+</body>
+</html>
