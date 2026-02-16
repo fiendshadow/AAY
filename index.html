@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#047857">
+    <title>Quran Hafiz Pro</title>
+    
+    <!-- Шрифты -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- 1. CORE THEME --- */
+        :root {
+            --primary: #059669; /* Emerald 600 */
+            --primary-dark: #064e3b;
+            --bg: #f0fdf4;
+            --surface: #ffffff;
+            --text-main: #1f2937;
+            --text-sec: #6b7280;
+            --border: #e5e7eb;
+            
+            /* Traffic Light Colors */
+            --status-green: #10b981;
+            --status-yellow: #f59e0b;
+            --status-red: #ef4444;
+
+            --radius: 16px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --font-main: 'Inter', sans-serif;
+            --font-ar: 'Amiri', serif;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #111827;
+                --surface: #1f2937;
+                --text-main: #f9fafb;
+                --text-sec: #9ca3af;
+                --border: #374151;
+            }
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 80px;
+            overflow-x: hidden;
+        }
+
+        body[dir="rtl"] { font-family: var(--font-ar); }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* --- 2. COMPONENTS --- */
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--status-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .btn-icon {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn-icon:active { transform: scale(0.95); }
+
+        /* Heatmap (Activity Grid) */
+        .heatmap-container {
+            background: var(--surface);
+            padding: 15px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
+            overflow-x: auto;
+        }
+        .heatmap-title {
+            font-size: 12px; font-weight: 700; color: var(--text-sec);
+            margin-bottom: 10px; text-transform: uppercase;
+        }
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(15, 1fr); /* 15 days per row */
+            gap: 4px;
+        }
+        .heat-cell {
+            aspect-ratio: 1;
+            background: var(--border);
+            border-radius: 4px;
+        }
+        .heat-l1 { background: #6ee7b7; } /* Light Green */
+        .heat-l2 { background: #10b981; } /* Med Green */
+        .heat-l3 { background: #047857; } /* Dark Green */
+
+        /* Day Card (Focus Mode) */
+        .day-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            animation: slideUp 0.4s ease;
+        }
+        .day-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        .day-title { font-size: 20px; font-weight: 800; color: var(--primary); }
+        .day-badge { 
+            font-size: 12px; background: var(--bg); color: var(--primary); 
+            padding: 4px 8px; border-radius: 6px; font-weight: 600; 
+        }
+
+        /* Task Item */
+        .task-item {
+            margin-bottom: 15px;
+        }
+        .task-top {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 8px;
+        }
+        .task-label {
+            font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+            padding: 2px 6px; border-radius: 4px;
+        }
+        .lbl-manzil { background: #ffedd5; color: #c2410c; }
+        .lbl-sabki { background: #e0f2fe; color: #0369a1; }
+        .lbl-sabak { background: #d1fae5; color: #047857; }
+
+        .task-desc { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+        
+        /* Action Buttons (Traffic Light & Mushaf) */
+        .task-actions {
+            display: flex; gap: 8px;
+        }
+        .btn-action {
+            flex: 1;
+            padding: 8px;
+            border: none; border-radius: 8px;
+            font-size: 16px; cursor: pointer;
+            transition: transform 0.1s;
+            opacity: 0.4; filter: grayscale(1);
+        }
+        .btn-action:active { transform: scale(0.9); }
+        .btn-action.active { opacity: 1; filter: grayscale(0); transform: scale(1.05); }
+
+        .btn-green { background: var(--status-green); color: white; }
+        .btn-yellow { background: var(--status-yellow); color: white; }
+        .btn-red { background: var(--status-red); color: white; }
+        
+        .btn-mushaf {
+            background: var(--text-main); color: var(--surface);
+            flex: 0 0 40px; display: flex; align-items: center; justify-content: center;
+            opacity: 1; filter: none;
+        }
+
+        /* --- 3. MODALS --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 1000; display: none;
+            justify-content: center; align-items: flex-end;
+        }
+        .modal-overlay.open { display: flex; animation: fadeIn 0.2s; }
+        
+        .modal-card {
+            background: var(--surface); width: 100%; max-width: 600px;
+            border-radius: 24px 24px 0 0; padding: 25px;
+            max-height: 90vh; overflow-y: auto;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @media(min-width: 600px) { .modal-overlay{align-items:center;} .modal-card{border-radius:24px;} }
+
+        /* Mushaf Viewer */
+        .mushaf-img { width: 100%; border-radius: 8px; box-shadow: var(--shadow); }
+        .loading-spinner { text-align: center; padding: 20px; color: var(--text-sec); }
+
+        /* Forms */
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-sec); font-size: 14px; }
+        select, input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text-main); font-size: 16px; }
+        .btn-primary { background: var(--primary); color: white; width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; }
+
+        /* Onboarding Steps */
+        .step-box { background: var(--bg); padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--primary); }
+        .step-title { font-weight: 700; margin-bottom: 4px; color: var(--primary-dark); }
+        .step-text { font-size: 14px; color: var(--text-sec); }
+
+        /* Animations */
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <!-- 1. HEADER -->
+    <header>
+        <div class="logo">HafizPro</div>
+        <div style="display: flex; gap: 10px;">
+            <div class="btn-icon" onclick="openModal('settingsModal')">⚙️</div>
+        </div>
+    </header>
+
+    <!-- 2. HEATMAP (Activity) -->
+    <div class="heatmap-container">
+        <div class="heatmap-title" id="lblActivity">Активность (30 дней)</div>
+        <div class="heatmap-grid" id="heatmapGrid">
+            <!-- Grid generated by JS -->
+        </div>
+    </div>
+
+    <!-- 3. QUOTE (Optional) -->
+    <div id="quoteArea" style="margin-bottom: 20px; font-style: italic; color: var(--text-sec); font-size: 14px; text-align: center;"></div>
+
+    <!-- 4. SCHEDULE LIST -->
+    <div id="scheduleList">
+        <!-- Day cards generated by JS -->
+    </div>
+</div>
+
+<!-- --- MODAL: MUSHAF VIEWER --- -->
+<div class="modal-overlay" id="mushafModal">
+    <div class="modal-card">
+        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+            <h3 style="margin:0">Мусхаф</h3>
+            <button class="btn-icon" onclick="closeModal('mushafModal')" style="width:30px; height:30px;">✕</button>
+        </div>
+        <div id="mushafContainer">
+            <!-- Image goes here -->
+        </div>
+        <p style="text-align:center; font-size:12px; color:var(--text-sec); margin-top:10px;">
+            Изображение страницы (Мединский шрифт)
+        </p>
+    </div>
+</div>
+
+<!-- --- MODAL: SETTINGS --- -->
+<div class="modal-overlay" id="settingsModal">
+    <div class="modal-card">
+        <h3 id="txtSettingsTitle">Настройки</h3>
+        
+        <div class="form-group">
+            <label id="lblLang">Язык / Language</label>
+            <select id="inpLang" onchange="changeLang(this.value)">
+                <option value="ru">Русский</option>
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label id="lblStart">Стартовая страница</label>
+            <input type="number" id="inpStart" value="1" min="1" max="604">
+        </div>
+
+        <div class="form-group">
+            <label id="lblPace">Темп (в день)</label>
+            <select id="inpPace">
+                <option value="0.5">Половина страницы</option>
+                <option value="1">Целая страница</option>
+                <option value="5">5 строк</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label id="lblDays">Длительность плана</label>
+            <select id="inpDuration">
+                <option value="7">7 дней</option>
+                <option value="14">14 дней</option>
+                <option value="30">30 дней</option>
+            </select>
+        </div>
+
+        <button class="btn-primary" onclick="generatePlan()" id="btnSave">Создать план</button>
+        <p style="text-align:center; font-size:12px; color:var(--status-red); margin-top:10px;" id="lblWarn">
+            ⚠️ Создание нового плана удалит прогресс!
+        </p>
+    </div>
+</div>
+
+<!-- --- MODAL: ONBOARDING (INSTRUCTION) --- -->
+<div class="modal-overlay" id="onboardingModal">
+    <div class="modal-card">
+        <h2 style="color:var(--primary); margin-top:0;">Добро пожаловать!</h2>
+        <p style="color:var(--text-sec); margin-bottom:20px;">
+            Система 5 крепостей — это лучший способ стать сильным хафизом. Вот как мы будем учиться:
+        </p>
+
+        <div class="step-box">
+            <div class="step-title">1. МАНЗИЛЬ (АРХИВ)</div>
+            <div class="step-text">Это твой золотой запас. Старые страницы. Читай их в первую очередь, чтобы фундамент не треснул.</div>
+        </div>
+
+        <div class="step-box">
+            <div class="step-title">2. САБКИ (СВЯЗКА)</div>
+            <div class="step-text">Самое важное! Это последние 5 страниц. Они еще "сырые". Читай их каждый день наизусть, пока они не затвердеют.</div>
+        </div>
+
+        <div class="step-box">
+            <div class="step-title">3. САБАК (НОВОЕ)</div>
+            <div class="step-text">Твой урок на сегодня. Учи качественно, не торопись. Лучше меньше, но крепче.</div>
+        </div>
+
+        <button class="btn-primary" onclick="completeOnboarding()">Начать путь</button>
+    </div>
+</div>
+
+<script>
+    // --- DICTIONARY ---
+    const i18n = {
+        ru: {
+            manzil: "Манзиль (Архив)",
+            sabki: "Сабки (Связка)",
+            sabak: "Сабак (Новое)",
+            days: "День",
+            activity: "Активность (30 дней)",
+            settings: "Настройки",
+            lang: "Язык",
+            start: "Старт (стр)",
+            pace: "Темп",
+            duration: "Длительность",
+            save: "Создать план",
+            warn: "⚠️ Сброс прогресса!",
+            q_manzil: "Читать наизусть старое",
+            q_sabki: "Повторить последние 5 стр",
+            q_sabak: "Выучить новое",
+            onboard_btn: "Понятно, начать",
+            mushaf_err: "Ошибка загрузки страницы"
+        },
+        en: {
+            manzil: "Manzil (Archive)",
+            sabki: "Sabki (Recent)",
+            sabak: "Sabak (New)",
+            days: "Day",
+            activity: "Activity (30 days)",
+            settings: "Settings",
+            lang: "Language",
+            start: "Start Page",
+            pace: "Pace",
+            duration: "Duration",
+            save: "Generate Plan",
+            warn: "⚠️ Resets progress!",
+            q_manzil: "Review old pages",
+            q_sabki: "Review last 5 pages",
+            q_sabak: "Memorize new lesson",
+            onboard_btn: "Start Journey",
+            mushaf_err: "Error loading page"
+        },
+        ar: {
+            manzil: "المنزل (المراجعة)",
+            sabki: "السبقي (الرابط)",
+            sabak: "السبق (الدرس)",
+            days: "اليوم",
+            activity: "النشاط (30 يوم)",
+            settings: "الإعدادات",
+            lang: "اللغة",
+            start: "صفحة البداية",
+            pace: "المقدار",
+            duration: "المدة",
+            save: "إنشاء الخطة",
+            warn: "⚠️ سيتم حذف التقدم!",
+            q_manzil: "مراجعة المحفوظ القديم",
+            q_sabki: "مراجعة آخر 5 صفحات",
+            q_sabak: "حفظ الدرس الجديد",
+            onboard_btn: "ابدأ الرحلة",
+            mushaf_err: "خطأ في تحميل الصفحة"
+        }
+    };
+
+    // --- STATE ---
+    const DB_KEY = 'hafiz_pro_v4';
+    let state = {
+        lang: 'ru',
+        onboardingDone: false,
+        settings: { start: 1, pace: 0.5, duration: 30 },
+        schedule: [],
+        progress: {}, // { "d1_m": 3, "d1_s": 2 ... } 1=red, 2=yellow, 3=green
+        history: {} // { "2023-10-27": 5 } tasks count
+    };
+
+    // --- AUDIO ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const t = audioCtx.currentTime;
+        
+        gain.connect(audioCtx.destination);
+        osc.connect(gain);
+
+        if (type === 'tap') {
+            osc.frequency.setValueAtTime(400, t);
+            gain.gain.setValueAtTime(0.05, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+            osc.start(t); osc.stop(t + 0.1);
+        } else if (type === 'success') {
+            osc.frequency.setValueAtTime(440, t);
+            osc.frequency.linearRampToValueAtTime(880, t + 0.2);
+            gain.gain.setValueAtTime(0.05, t);
+            gain.gain.linearRampToValueAtTime(0, t + 0.4);
+            osc.start(t); osc.stop(t + 0.4);
+        }
+    }
+
+    // --- LOGIC ---
+    function init() {
+        const saved = localStorage.getItem(DB_KEY);
+        if (saved) state = JSON.parse(saved);
+
+        applyLang(state.lang);
+        
+        if (!state.onboardingDone) {
+            openModal('onboardingModal');
+        } else {
+            if (state.schedule.length === 0) generatePlan(); // Auto generate if empty
+            renderDashboard();
+            renderHeatmap();
+        }
+    }
+
+    function generatePlan() {
+        // Read from Modal Inputs
+        const start = parseInt(document.getElementById('inpStart').value);
+        const pace = parseFloat(document.getElementById('inpPace').value);
+        const dur = parseInt(document.getElementById('inpDuration').value);
+        const lang = document.getElementById('inpLang').value;
+
+        state.settings = { start, pace, duration: dur };
+        state.lang = lang;
+        state.progress = {};
+        
+        // Logic Builder
+        let plan = [];
+        let currPage = start;
+        let currLine = 0;
+
+        for (let d = 1; d <= dur; d++) {
+            let mTxt = "", sTxt = "", nTxt = "";
+            let nPage = 0; // Page needed for Mushaf
+            let isRest = (d % 7 === 0);
+
+            // 1. Manzil
+            if (currPage <= 1) mTxt = "---";
+            else {
+                let end = Math.floor(currPage) - 5;
+                if(end < 1) end = 1;
+                mTxt = (end > 1) ? `1 - ${end}` : "---";
+            }
+
+            // 2. Sabki
+            let sEnd = Math.floor(currPage);
+            let sStart = Math.max(1, sEnd - 4);
+            sTxt = `${sStart} - ${sEnd}`;
+
+            // 3. Sabak
+            if (isRest) {
+                nTxt = "Jumu'ah / Review";
+                nPage = sEnd;
+            } else {
+                if (pace >= 1) {
+                    nTxt = `Page ${currPage}`;
+                    nPage = currPage;
+                    currPage++;
+                } else if (pace === 0.5) {
+                    let part = (currLine === 0) ? "Top" : "Bottom";
+                    nTxt = `Page ${currPage} (${part})`;
+                    nPage = currPage;
+                    if(currLine === 0) currLine = 1; 
+                    else { currLine = 0; currPage++; }
+                } else {
+                    nTxt = `Page ${currPage} (Lines)`;
+                    nPage = currPage;
+                    // Simplify line logic for demo
+                    currPage += 0.2; // approx
+                }
+            }
+
+            plan.push({ d: d, m: mTxt, s: sTxt, n: nTxt, p: Math.floor(nPage), rest: isRest });
+        }
+        
+        state.schedule = plan;
+        state.onboardingDone = true;
+        closeModal('settingsModal');
+        saveState();
+        applyLang(state.lang); // Refresh text
+        renderDashboard();
+        renderHeatmap();
+    }
+
+    function renderDashboard() {
+        const list = document.getElementById('scheduleList');
+        list.innerHTML = '';
+        const t = i18n[state.lang];
+
+        // Only show first incomplete day + completed ones (Focus Mode)
+        // Or show all. Let's show all for clarity but highlight current.
+        let foundFocus = false;
+
+        state.schedule.forEach((day, idx) => {
+            const dayNum = idx + 1;
+            const kM = `d${dayNum}_m`, kS = `d${dayNum}_s`, kN = `d${dayNum}_n`;
+            
+            // Get quality levels (0=none, 1=red, 2=yellow, 3=green)
+            const qM = state.progress[kM] || 0;
+            const qS = state.progress[kS] || 0;
+            const qN = state.progress[kN] || 0;
+            
+            const isDone = (qM > 0 && qS > 0 && qN > 0);
+            
+            // Render
+            const div = document.createElement('div');
+            div.className = 'day-card';
+            if (!foundFocus && !isDone) {
+                div.style.border = '2px solid var(--primary)';
+                foundFocus = true;
+            }
+
+            // Task Builder Function
+            const buildTask = (type, key, label, val, quality, page) => `
+                <div class="task-item">
+                    <div class="task-top">
+                        <span class="task-label lbl-${type}">${label}</span>
+                        ${type === 'sabak' ? `<button class="btn-action btn-mushaf" onclick="showMushaf(${page})">👁️</button>` : ''}
+                    </div>
+                    <div class="task-desc">${val}</div>
+                    <div class="task-actions">
+                        <button class="btn-action btn-red ${quality===1?'active':''}" onclick="rate('${key}', 1)">🔴</button>
+                        <button class="btn-action btn-yellow ${quality===2?'active':''}" onclick="rate('${key}', 2)">🟡</button>
+                        <button class="btn-action btn-green ${quality===3?'active':''}" onclick="rate('${key}', 3)">🟢</button>
+                    </div>
+                </div>
+            `;
+
+            div.innerHTML = `
+                <div class="day-header">
+                    <span class="day-title">${t.days} ${day.d}</span>
+                    ${isDone ? '<span class="day-badge">DONE ✅</span>' : ''}
+                </div>
+                ${buildTask('manzil', kM, t.manzil, day.m, qM, 0)}
+                ${buildTask('sabki', kS, t.sabki, day.s, qS, 0)}
+                ${buildTask('sabak', kN, t.sabak, day.n, qN, day.p)}
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function renderHeatmap() {
+        const grid = document.getElementById('heatmapGrid');
+        grid.innerHTML = '';
+        
+        // Generate last 30 days
+        for (let i=29; i>=0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateKey = d.toISOString().split('T')[0];
+            const count = state.history[dateKey] || 0;
+            
+            const cell = document.createElement('div');
+            cell.className = 'heat-cell';
+            if(count > 0) cell.classList.add('heat-l1');
+            if(count > 2) cell.classList.add('heat-l2');
+            if(count > 5) cell.classList.add('heat-l3');
+            
+            grid.appendChild(cell);
+        }
+    }
+
+    function rate(key, quality) {
+        // Save progress
+        state.progress[key] = quality;
+        
+        // Update History (Heatmap)
+        const today = new Date().toISOString().split('T')[0];
+        if(!state.history[today]) state.history[today] = 0;
+        state.history[today]++; // Simply increment activity count
+
+        playSound('tap');
+        if (quality === 3) playSound('success');
+
+        saveState();
+        renderDashboard();
+        renderHeatmap();
+    }
+
+    function showMushaf(page) {
+        if (!page || page < 1) return;
+        const container = document.getElementById('mushafContainer');
+        container.innerHTML = '<div class="loading-spinner">Загрузка...</div>';
+        
+        const img = new Image();
+        // Reliable source for images
+        img.src = `https://img.globalquran.com/data/quran/page/${page}.png`;
+        img.className = 'mushaf-img';
+        
+        img.onload = () => { container.innerHTML = ''; container.appendChild(img); };
+        img.onerror = () => { container.innerHTML = '<div class="loading-spinner">Ошибка загрузки. Проверьте интернет.</div>'; };
+        
+        openModal('mushafModal');
+    }
+
+    // --- UTILS ---
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    
+    function completeOnboarding() {
+        state.onboardingDone = true;
+        closeModal('onboardingModal');
+        openModal('settingsModal'); // Force settings after intro
+    }
+
+    function applyLang(l) {
+        state.lang = l;
+        document.body.dir = (l === 'ar') ? 'rtl' : 'ltr';
+        document.getElementById('lblActivity').innerText = i18n[l].activity;
+        document.getElementById('txtSettingsTitle').innerText = i18n[l].settings;
+        
+        // Update labels inside modal
+        document.getElementById('lblLang').innerText = i18n[l].lang;
+        document.getElementById('lblStart').innerText = i18n[l].start;
+        document.getElementById('lblPace').innerText = i18n[l].pace;
+        document.getElementById('lblDays').innerText = i18n[l].duration;
+        document.getElementById('btnSave').innerText = i18n[l].save;
+        document.getElementById('lblWarn').innerText = i18n[l].warn;
+        
+        // Update Select Value
+        document.getElementById('inpLang').value = l;
+    }
+
+    function changeLang(val) {
+        applyLang(val);
+        saveState();
+        renderDashboard(); // Re-render text cards
+    }
+
+    function saveState() {
+        localStorage.setItem(DB_KEY, JSON.stringify(state));
+    }
+
+    // Start
+    init();
+
+</script>
+</body>
+</html>
